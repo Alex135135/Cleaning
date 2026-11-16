@@ -25,17 +25,14 @@ export default function Hero({
                         </span>
                     )}
 
-                    <h1 className="hero-heading">
-                        {heading.split(" ").map((word, idx) =>
-                            word === "вернуться." ? <em key={idx}>{word}</em> : <span key={idx}>{word} </span>
-                        )}
-                    </h1>
+                    <h1 className="hero-heading">{heading}</h1>
 
                     <p className="hero-description">{description}</p>
 
                     <div className="hero-actions" role="group" aria-label="Действия">
                         <a className="button" href="#price">
-                            Узнать стоимость <ArrowUpRight size={19} className="button-icon" />
+                            Узнать стоимость
+                            <ArrowUpRight size={19} className="button-icon" aria-hidden="true" />
                         </a>
                         <a className="under-link" href="#services">
                             Посмотреть услуги ↘
