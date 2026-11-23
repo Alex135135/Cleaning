@@ -5,16 +5,25 @@ interface Props {
     item: Service;
     quantity: number;
     onAdjust: (delta: number) => void;
+    maxQuantity?: number; // опционально: защита от слишком больших значений
 }
 
-export default function CalculatorRow({ item, quantity, onAdjust }: Props) {
+export default function CalculatorRow({
+    item,
+    quantity,
+    onAdjust,
+    maxQuantity,
+}: Props) {
+    const canDecrease = quantity > 0;
+    const canIncrease = maxQuantity === undefined || quantity < maxQuantity;
+
     const handleDecrease = () => {
-        if (quantity <= 0) return;
+        if (!canDecrease) return;
         onAdjust(-1);
     };
 
     const handleIncrease = () => {
-        // Если нужна защита от слишком больших значений — добавь проверку здесь
+        if (!canIncrease) return;
         onAdjust(1);
     };
 
@@ -24,23 +33,33 @@ export default function CalculatorRow({ item, quantity, onAdjust }: Props) {
                 <h3 id={`title-${item.key}`} className="row-title">
                     {item.title}
                 </h3>
-                <small className="row-price">
+                <small className="row-price" aria-hidden="true">
                     от {item.price.toLocaleString("ru-RU")} ₽ / шт.
                 </small>
+                {/* Дублируем цену в aria-label для скринридеров, если это важно в контексте */}
             </div>
 
-            <div className="stepper" aria-label="Управление количеством">
+            <div
+                className="stepper"
+                role="group"
+                aria-label={`Управление количеством: ${item.title}`}
+            >
                 <button
                     type="button"
                     aria-label={`Уменьшить количество ${item.title}`}
                     onClick={handleDecrease}
-                    disabled={quantity <= 0}
-                    className={quantity <= 0 ? "stepper-btn disabled" : "stepper-btn"}
+                    disabled={!canDecrease}
+                    className={`stepper-btn ${!canDecrease ? "stepper-btn--disabled" : ""}`}
                 >
-                    <Minus size={16} />
+                    <Minus size={16} aria-hidden="true" />
+                    <span className="sr-only">Уменьшить</span>
                 </button>
 
-                <span className="stepper-value" aria-live="polite">
+                <span
+                    className="stepper-value"
+                    aria-live="polite"
+                    aria-atomic="true"
+                >
                     {quantity}
                 </span>
 
@@ -48,9 +67,11 @@ export default function CalculatorRow({ item, quantity, onAdjust }: Props) {
                     type="button"
                     aria-label={`Увеличить количество ${item.title}`}
                     onClick={handleIncrease}
-                    className="stepper-btn"
+                    disabled={!canIncrease}
+                    className={`stepper-btn ${!canIncrease ? "stepper-btn--disabled" : ""}`}
                 >
-                    <Plus size={16} />
+                    <Plus size={16} aria-hidden="true" />
+                    <span className="sr-only">Увеличить</span>
                 </button>
             </div>
         </div>
